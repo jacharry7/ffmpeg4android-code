@@ -20,8 +20,8 @@ do
     ln -s $FFMPEG4ANDROID_ROOT_DIR/$ffmpegdir $ANDROID_ROOT_DIR/external/
     rm -rf $ANDROID_ROOT_DIR/external/$ffmpegdir/android
     . build/envsetup.sh;
-    lunch full-eng; cd $ANDROID_ROOT_DIR/external/$ffmpegdir; mm -Bj24; cd $ANDROID_ROOT_DIR;
-    lunch full_mips-eng; cd $ANDROID_ROOT_DIR/external/$ffmpegdir; mm -Bj24; cd $ANDROID_ROOT_DIR;
-    lunch full_x86-eng; cd $ANDROID_ROOT_DIR/external/$ffmpegdir; mm -Bj24; cd $ANDROID_ROOT_DIR;
+    lunch full-eng; mmm $ANDROID_ROOT_DIR/external/$ffmpegdir -Bj24;
+    lunch full_mips-eng; mmm $ANDROID_ROOT_DIR/external/$ffmpegdir -Bj24;
+    lunch full_x86-eng; mmm $ANDROID_ROOT_DIR/external/$ffmpegdir -Bj24;
     rm $ANDROID_ROOT_DIR/external/$ffmpegdir
 done

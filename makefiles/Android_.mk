@@ -35,9 +35,19 @@ YASM-OBJS-yes :=
 FFLIBS :=
 FFLIBS-yes :=
 
+CFLAGS :=
+CPPFLAGS :=
+CXXFLAGS :=
+EXTRALIBS :=
+
+
+
 include $(FFMPEG_ROOT_DIR)/$(FFMPEG_LIB_DIR)/Makefile.android
 -include $(FFMPEG_ROOT_DIR)/$(FFMPEG_LIB_DIR)/$(TARGET_ARCH)/Makefile
 
+ifeq ($(VERSION_BRANCH),2.0)
+    include $(FFMPEG_ROOT_DIR)/arch.mak
+endif
 ifeq ($(VERSION_BRANCH),1.2)
     include $(FFMPEG_ROOT_DIR)/arch.mak
 endif
@@ -57,7 +67,7 @@ FFNAME := lib$(NAME)$(VERSION_SUFFIX)
 FFLIBS += $(FFLIBS-yes)
 FFLIBS := $(foreach NAME, $(FFLIBS), lib$(NAME)$(VERSION_SUFFIX))
 FFLIBS := $(sort $(FFLIBS))
-FFCFLAGS := -DHAVE_AV_CONFIG_H $(CFLAGS) \
+FFCFLAGS := -DHAVE_AV_CONFIG_H -Dav_restrict=__restrict -Drestrict=__restrict $(CFLAGS) \
 
 FFCFLAGS_OUTPUT_CLEANING := \
     -Wno-cast-qual \
@@ -69,6 +79,7 @@ FFCFLAGS_OUTPUT_CLEANING := \
     -Wno-override-init \
     -Wno-sign-compare \
     -Wno-strict-prototypes \
+    -Wno-switch \
     -Wno-undef \
     -Wno-uninitialized \
     -Wno-unused-function \

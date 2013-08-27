@@ -30,6 +30,11 @@ FF_CONFIGURATION_STRING := \
     --enable-shared \
     --enable-static
 
+ifeq ($(VERSION_BRANCH),2.0)
+    FF_CONFIGURATION_STRING += \
+        --enable-avresample
+endif
+
 ifeq ($(VERSION_BRANCH),1.2)
     FF_CONFIGURATION_STRING += \
         --enable-avresample
@@ -73,7 +78,7 @@ endif
 
 include $(ANDROID_BUILD_TOP)/build/core/combo/arch/$(TARGET_ARCH)/$(TARGET_ARCH_VARIANT).mk
 
-FF_CONFIGURATION_STRING += --extra-cflags='$(arch_variant_cflags)'
+#FF_CONFIGURATION_STRING += --extra-cflags='$(arch_variant_cflags)'
 FF_CONFIGURATION_STRING += --extra-ldflags='$(arch_variant_ldflags)'
 FF_CONFIGURATION_STRING += --extra-version=.android
 
@@ -114,6 +119,20 @@ ifneq ($(FF_CONFIGURATION_STRING), $(FF_LAST_CONFIGURATION_STRING_OUTPUT))
             --disable-yasm; \
         make -j; \
         cd $$OLDPWD;
+
+    ifeq ($(VERSION_BRANCH),2.0)
+        FF_CREATE_REQUIRED_FILES_COMMAND := \
+            cd $(FFMPEG_ROOT_DIR)/$(FFMPEG_CONFIG_DIR); \
+            ../../configure \
+                --enable-shared \
+                --enable-static \
+                --enable-gpl \
+                --enable-avresample \
+                --disable-everything \
+                --disable-yasm; \
+            make -j; \
+            cd $$OLDPWD;
+    endif
 
     ifeq ($(VERSION_BRANCH),1.2)
         FF_CREATE_REQUIRED_FILES_COMMAND := \
@@ -194,11 +213,37 @@ ifneq ($(FF_CONFIGURATION_STRING), $(FF_LAST_CONFIGURATION_STRING_OUTPUT))
 
 
 
+    ifeq ($(VERSION_BRANCH),2.0)
+        FF_FIX_CONFIGURATION_COMMAND := \
+            cd $(FFMPEG_ROOT_DIR)/$(FFMPEG_CONFIG_DIR); \
+            \
+            cat config.h | \
+            sed 's/\#define av_restrict restrict/\#define av_restrict __restrict/g' | \
+            sed 's/\#define ARCH_ARM /\#ifdef ARCH_ARM\n\#undef ARCH_ARM\n\#endif\n\#define ARCH_ARM /g' | \
+            sed 's/\#define ARCH_MIPS /\#ifdef ARCH_MIPS\n\#undef ARCH_MIPS\n\#endif\n\#define ARCH_MIPS /g' | \
+            sed 's/\#define ARCH_X86 /\#ifdef ARCH_X86\n\#undef ARCH_X86\n\#endif\n\#define ARCH_X86 /g' | \
+            sed 's/\#define HAVE_PTHREADS/\#ifdef HAVE_PTHREADS\n\#undef HAVE_PTHREADS\n\#endif\n\#define HAVE_PTHREADS/g' | \
+            sed 's/\#define HAVE_MALLOC_H/\#ifdef HAVE_MALLOC_H\n\#undef HAVE_MALLOC_H\n\#endif\n\#define HAVE_MALLOC_H/g' | \
+            sed 's/\#define HAVE_STRERROR_R 1/\#define HAVE_STRERROR_R 0/g' | \
+            cat > config.h.tmp; \
+            mv config.h config.h.bak; \
+            mv config.h.tmp config.h; \
+            \
+            cat config.mak | \
+            sed 's/HAVE_STRERROR_R=yes/!HAVE_STRERROR_R=yes/g' | \
+            cat > config.mak.tmp; \
+            mv config.mak config.mak.bak; \
+            mv config.mak.tmp config.mak; \
+            \
+            cd $(OLDPWD);
+    endif
+
     ifeq ($(VERSION_BRANCH),1.2)
         FF_FIX_CONFIGURATION_COMMAND := \
             cd $(FFMPEG_ROOT_DIR)/$(FFMPEG_CONFIG_DIR); \
             \
             cat config.h | \
+            sed 's/\#define av_restrict restrict/\#define av_restrict __restrict/g' | \
             sed 's/\#define ARCH_ARM /\#ifdef ARCH_ARM\n\#undef ARCH_ARM\n\#endif\n\#define ARCH_ARM /g' | \
             sed 's/\#define ARCH_MIPS /\#ifdef ARCH_MIPS\n\#undef ARCH_MIPS\n\#endif\n\#define ARCH_MIPS /g' | \
             sed 's/\#define ARCH_X86 /\#ifdef ARCH_X86\n\#undef ARCH_X86\n\#endif\n\#define ARCH_X86 /g' | \
@@ -223,6 +268,7 @@ ifneq ($(FF_CONFIGURATION_STRING), $(FF_LAST_CONFIGURATION_STRING_OUTPUT))
             cd $(FFMPEG_ROOT_DIR)/$(FFMPEG_CONFIG_DIR); \
             \
             cat config.h | \
+            sed 's/\#define av_restrict restrict/\#define av_restrict __restrict/g' | \
             sed 's/\#define ARCH_ARM /\#ifdef ARCH_ARM\n\#undef ARCH_ARM\n\#endif\n\#define ARCH_ARM /g' | \
             sed 's/\#define ARCH_MIPS /\#ifdef ARCH_MIPS\n\#undef ARCH_MIPS\n\#endif\n\#define ARCH_MIPS /g' | \
             sed 's/\#define ARCH_X86 /\#ifdef ARCH_X86\n\#undef ARCH_X86\n\#endif\n\#define ARCH_X86 /g' | \
@@ -394,6 +440,23 @@ ifneq ($(FF_CONFIGURATION_STRING), $(FF_LAST_CONFIGURATION_STRING_OUTPUT))
     $(warning ============================================================)
 
 
+
+    ifeq ($(VERSION_BRANCH),2.0)
+        FF_FIX_MAKEFILES_COMMAND := \
+            cd $(FFMPEG_ROOT_DIR); \
+                sed 's/include $$(SUBDIR)..\/config.mak/\#include $$(SUBDIR)..\/config.mak/g' libavcodec/Makefile     > libavcodec/Makefile.android; \
+                sed 's/include $$(SUBDIR)..\/config.mak/\#include $$(SUBDIR)..\/config.mak/g' libavdevice/Makefile    > libavdevice/Makefile.android; \
+                sed 's/include $$(SUBDIR)..\/config.mak/\#include $$(SUBDIR)..\/config.mak/g' libavfilter/Makefile    | \
+                sed 's/clean::/\#clean::/g'                                                                           | \
+                sed 's/\t$$(RM) $$(CLEANSUFFIXES/\#\t$$(RM) $$(CLEANSUFFIXES/g'                                       > libavfilter/Makefile.android; \
+                sed 's/include $$(SUBDIR)..\/config.mak/\#include $$(SUBDIR)..\/config.mak/g' libavformat/Makefile    > libavformat/Makefile.android; \
+                sed 's/include $$(SUBDIR)..\/config.mak/\#include $$(SUBDIR)..\/config.mak/g' libavresample/Makefile  > libavresample/Makefile.android; \
+                sed 's/include $$(SUBDIR)..\/config.mak/\#include $$(SUBDIR)..\/config.mak/g' libavutil/Makefile      > libavutil/Makefile.android; \
+                sed 's/include $$(SUBDIR)..\/config.mak/\#include $$(SUBDIR)..\/config.mak/g' libpostproc/Makefile    > libpostproc/Makefile.android; \
+                sed 's/include $$(SUBDIR)..\/config.mak/\#include $$(SUBDIR)..\/config.mak/g' libswresample/Makefile  > libswresample/Makefile.android; \
+                sed 's/include $$(SUBDIR)..\/config.mak/\#include $$(SUBDIR)..\/config.mak/g' libswscale/Makefile     > libswscale/Makefile.android; \
+                cd $$OLDPWD;
+    endif
 
     ifeq ($(VERSION_BRANCH),1.2)
         FF_FIX_MAKEFILES_COMMAND := \
