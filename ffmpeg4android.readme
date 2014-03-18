@@ -45,14 +45,12 @@ during my work.
 
 Makefiles are tested and are working fine on:
 
-Build host OS:      Ubuntu 10.04, Ubuntu 11.04
-Android target OS:  ICS, JB, Android Master branch
+Build host OS:      Ubuntu 12.04
+Android target OS:  Android Master branch
 Architecture:       arm, mips, x86
-SDK + NDK release:  platform-11 + NDK-r6, platform-14 + NDK-r8
-Product:            full-eng, full_mips-eng, full_x86-eng, and some
-                    proprietary bleeding edge products
-FFmpeg releases:    Latest releases form 0.7, 0.8, 0.9, 0.10, 0.11, 1.0,
-                    1.1, 1.2 and HEAD branches
+SDK + NDK release:  highest available, selected during building
+Product:            aosp_arm-eng, aosp_mips-eng, aosp_x86-eng
+FFmpeg releases:    Latest releases from 0.7, 2.0 and HEAD branches
 
 
 
@@ -71,8 +69,7 @@ Features
   configuration.
 - Builds all libraries and tools, except ffplay.
 - Builds both shared and static libraries.
-- Builds latest releases form 0.7, 0.8, 0.9, 0.10, 0.11, 1.0, 1.1, 1.2 and
-  HEAD branches.
+- Builds latest releases from 0.7, 2.0 and HEAD branches.
 - Supports parallel building from the same source for the different
   products.
 
@@ -82,7 +79,16 @@ Features
 Known issues
 ===========================================================================
 
-- None
+- For a very long time now, I was not able to make a release which can
+  build for all three major architectures - arm, mips and x86.
+  Sometimes problem was compiler, and sometimes problems were assembler
+  instructions. For the sake of making update to recent FFmpeg version,
+  I released makefiles which are not able to build all version to all
+  platforms.
+  With this release, you can build only:
+    For ARM: HEAD, 2.1.4, 0.7.16
+    For MIPS: 0.7.16
+    For X86: None
 
 
 
@@ -90,12 +96,10 @@ Known issues
 Note
 ===========================================================================
 
-As number of FFmpeg branches grows, the load on my equipment for build
-testing becomes overwhelming. At the same time, interest in older branches,
-like 0.7, 0.8, 0.9, 0.10, 0.11 is slim to none.
-
-In the future, I may stop supporting branches 0.8, 0.9, 0.10 and 0.11.
-I will keep 0.7, because it is the last 0.6 ABI compatible.
+Due to the overwhelming load on my build testing equipment, I have
+dramatically reduced supported versions, platforms and Android OS
+versions. From now on, the supported branches will be 0.7 as the last
+0.6 ABI compatible, latest official release and HEAD.
 
 
 
@@ -135,7 +139,7 @@ parameters provided in Android_configuration.mk. Whenever you change
 configuration parameters, the library will be reconfigured.
 
 Compiled FFmpeg libraries and tools will have version suffix, eg
-libavcodec-1.0.a, libavutil-1.0.so, ffprobe-1.0
+libavcodec-2.0.a, libavutil-2.0.so, ffprobe-2.0
 
 
 

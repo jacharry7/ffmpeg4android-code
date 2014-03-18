@@ -45,21 +45,27 @@ EXTRALIBS :=
 include $(FFMPEG_ROOT_DIR)/$(FFMPEG_LIB_DIR)/Makefile.android
 -include $(FFMPEG_ROOT_DIR)/$(FFMPEG_LIB_DIR)/$(TARGET_ARCH)/Makefile
 
-ifeq ($(VERSION_BRANCH),2.0)
+ifeq ($(VERSION_BRANCH),2.2)
     include $(FFMPEG_ROOT_DIR)/arch.mak
 endif
-ifeq ($(VERSION_BRANCH),1.2)
+ifeq ($(VERSION_BRANCH),2.1)
     include $(FFMPEG_ROOT_DIR)/arch.mak
 endif
-ifeq ($(VERSION_BRANCH),1.1)
-    include $(FFMPEG_ROOT_DIR)/arch.mak
-endif
-ifeq ($(VERSION_BRANCH),1.0)
-    include $(FFMPEG_ROOT_DIR)/arch.mak
-endif
-ifeq ($(VERSION_BRANCH),0.11)
-    include $(FFMPEG_ROOT_DIR)/arch.mak
-endif
+#ifeq ($(VERSION_BRANCH),2.0)
+#    include $(FFMPEG_ROOT_DIR)/arch.mak
+#endif
+#ifeq ($(VERSION_BRANCH),1.2)
+#    include $(FFMPEG_ROOT_DIR)/arch.mak
+#endif
+#ifeq ($(VERSION_BRANCH),1.1)
+#    include $(FFMPEG_ROOT_DIR)/arch.mak
+#endif
+#ifeq ($(VERSION_BRANCH),1.0)
+#    include $(FFMPEG_ROOT_DIR)/arch.mak
+#endif
+#ifeq ($(VERSION_BRANCH),0.11)
+#    include $(FFMPEG_ROOT_DIR)/arch.mak
+#endif
 
 OBJS += $(OBJS-yes)
 
@@ -67,7 +73,7 @@ FFNAME := lib$(NAME)$(VERSION_SUFFIX)
 FFLIBS += $(FFLIBS-yes)
 FFLIBS := $(foreach NAME, $(FFLIBS), lib$(NAME)$(VERSION_SUFFIX))
 FFLIBS := $(sort $(FFLIBS))
-FFCFLAGS := -DHAVE_AV_CONFIG_H -Dav_restrict=__restrict -Drestrict=__restrict $(CFLAGS) \
+FFCFLAGS := -DHAVE_AV_CONFIG_H -Dav_restrict=__restrict -Drestrict=__restrict $(CFLAGS)
 
 FFCFLAGS_OUTPUT_CLEANING := \
     -Wno-cast-qual \
@@ -77,6 +83,8 @@ FFCFLAGS_OUTPUT_CLEANING := \
     -Wno-missing-field-initializers \
     -Wno-old-style-declaration \
     -Wno-override-init \
+    -Wno-parentheses \
+    -Wno-pointer-sign \
     -Wno-sign-compare \
     -Wno-strict-prototypes \
     -Wno-switch \
@@ -86,7 +94,7 @@ FFCFLAGS_OUTPUT_CLEANING := \
     -Wno-unused-parameter \
     -Wno-unused-value
 
-FFCFLAGS += $(FFCFLAGS_OUTPUT_CLEANING)
+FFCFLAGS += $(FFCFLAGS_OUTPUT_CLEANING) $(arch_variant_cflags) -std=c99
 
 FFCPPFLAGS := $(CPPFLAGS)
 FFCXXFLAGS := $(CXXFLAGS)
